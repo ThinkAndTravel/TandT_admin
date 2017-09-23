@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="uk">
+    <head>
+        <title>Admin panel</title>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.min.js"></script>
+    </head>
+<body>
+
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">Admin panel</a>
+        </div>
+        <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Data bases</a></li>
+            <li><a href="../cloud/">Clouds</a></li>
+            <li><a href="#">Page 2</a></li>
+            <li><a href="#">Page 3</a></li>
+        </ul>
+    </div>
+</nav>
+
+<div class="container">
+    <canvas id="myChart"  width="540" height="100"></canvas>
+    <script>
+        var ctx = document.getElementById("myChart");
+        var myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [{% for e in dbs %} {% if e.4 %}  "{{ e.1 }}", {% endif %} {% endfor %}],
+                datasets: [{
+                    label: 'Використано мiсця (в МБ)',
+                    data: [{% for e in dbs %} {% if e.4 %} {{ e.4 }} , {% endif %} {% endfor %}],
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',///TODO: dynamically change bar color according to its value
+                    borderColor: 'rgba(255,99,132,1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero:true
+                        },
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'МБ'
+                        }
+                    }]
+                },
+                title: {
+                    display: true,
+                    text: 'Використання мiсця'
+                },
+                legend: {
+                    display: false
+                }
+            }
+        });
+    </script>
+    <br>
+    <form action="/db/change_db/" method="post" accept-charset="utf-8" style="display: inline;">
+        {% csrf_token %}
+        <input name="_id" type="hidden" value="" \>
+        <input name="dbName" type="text" value="" placeholder="dbName" \>
+        <input name="connectionString" type="text" value="" placeholder="Connection string" \>
+        <input name="dataType" type="text" value="" placeholder="Collection type" \>
+        <label>&nbsp;</label>
+        <input type="submit" value="Додати">
+    </form>
+    <br>
+    {% for e in dbs %}
+        <form action="/db/change_db/" method="post" accept-charset="utf-8" style="display: inline-block;">
+            {% csrf_token %}
+            <input name="_id" type="hidden" value="{{ e.0 }}"\>
+            <input name="dbName" type="text" value="{{ e.1 }}"\>
+            <input name="connectionString" type="text" value="{{ e.2 }}"\>
+            <input name="dataType" type="text" value="{{ e.3 }}"\>
+            <label>Використано мiсця: {{ e.4 }}</label>
+            <input type="submit" value="Зберегти">
+        </form>
+        <form action="/db/drop_db/" method="post" style="display: inline-block;">
+            {% csrf_token %}
+            <input name="_id" type="hidden" value="{{ e.0 }}"\>
+            <input type="submit" value="Видалити">
+        </form>
+        <br>
+    {% endfor %}
+
+</div>
+</body>
+</html>
